@@ -138,7 +138,9 @@ public class ColumnSnapshotGenerator extends HibernateSnapshotGenerator {
                     column.setDefaultValue(hibernateColumn.getDefaultValue());
                 }
                 column.setNullable(hibernateColumn.isNullable());
-                column.setCertainDataType(false);
+
+//                TODO: Confirm that at least the jvm snapshot generator doesn't set this attribute so we shouldn' either
+//                column.setCertainDataType(false);
 
                 org.hibernate.mapping.PrimaryKey hibernatePrimaryKey = hibernateTable.getPrimaryKey();
                 if (hibernatePrimaryKey != null) {
