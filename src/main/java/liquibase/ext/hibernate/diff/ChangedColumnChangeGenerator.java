@@ -56,11 +56,11 @@ public class ChangedColumnChangeGenerator extends liquibase.diff.output.changelo
         Difference typeDifference = differences.getDifference("type");
         if (typeDifference != null) {
             Database nonHibernateDatabase = refDbIsHibernate ? comparisonDatabase : referenceDatabase;
-            LiquibaseDataType referenceDatatype = DataTypeFactory.getInstance().fromDescription(
-                    (String) typeDifference.getReferenceValue(), nonHibernateDatabase
+            LiquibaseDataType referenceDatatype = DataTypeFactory.getInstance().from(
+                    (DataType) typeDifference.getReferenceValue(), nonHibernateDatabase
             );
-            LiquibaseDataType comparisonDatatype = DataTypeFactory.getInstance().fromDescription(
-                    (String) typeDifference.getComparedValue(), nonHibernateDatabase
+            LiquibaseDataType comparisonDatatype = DataTypeFactory.getInstance().from(
+                    (DataType) typeDifference.getComparedValue(), nonHibernateDatabase
             );
             if (referenceDatatype.equals(comparisonDatatype)) {
                 differences.removeDifference("type");
