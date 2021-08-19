@@ -3,6 +3,7 @@ package liquibase.ext.hibernate.diff;
 import liquibase.change.Change;
 import liquibase.database.Database;
 import liquibase.datatype.DataTypeFactory;
+import liquibase.datatype.DatabaseDataType;
 import liquibase.datatype.LiquibaseDataType;
 import liquibase.diff.Difference;
 import liquibase.diff.ObjectDifferences;
@@ -55,14 +56,10 @@ public class ChangedColumnChangeGenerator extends liquibase.diff.output.changelo
         // Check if any present type reference is actually a difference or just an alias
         Difference typeDifference = differences.getDifference("type");
         if (typeDifference != null) {
-            Database nonHibernateDatabase = refDbIsHibernate ? comparisonDatabase : referenceDatabase;
-            LiquibaseDataType referenceDatatype = DataTypeFactory.getInstance().from(
-                    (DataType) typeDifference.getReferenceValue(), nonHibernateDatabase
-            );
-            LiquibaseDataType comparisonDatatype = DataTypeFactory.getInstance().from(
-                    (DataType) typeDifference.getComparedValue(), nonHibernateDatabase
-            );
-            if (referenceDatatype.equals(comparisonDatatype)) {
+            DataType referenceDataType = (DataType) typeDifference.getReferenceValue();
+            DataType comparisonDataType = (DataType) typeDifference.getComparedValue();
+            if ((refDbIsHibernate && areDataTypesCompatible(referenceDataType, comparisonDataType, comparisonDatabase))
+                    || (!refDbIsHibernate && areDataTypesCompatible(comparisonDataType, referenceDataType, referenceDatabase))) {
                 differences.removeDifference("type");
             }
         }
@@ -84,6 +81,17 @@ public class ChangedColumnChangeGenerator extends liquibase.diff.output.changelo
         }
 
         return super.fixChanged(changedObject, differences, control, referenceDatabase, comparisonDatabase, chain);
+    }
+
+    private static boolean areDataTypesCompatible(DataType hibernateDataType, DataType otherDataType, Database nonHibernateDatabase) {
+        DatabaseDataType hibernateDbType = DataTypeFactory.getInstance().from(
+                 hibernateDataType, nonHibernateDatabase
+        ).toDatabaseDataType(nonHibernateDatabase);
+        DatabaseDataType otherDbType = DataTypeFactory.getInstance().from(
+                 otherDataType, nonHibernateDatabase
+        ).toDatabaseDataType(nonHibernateDatabase);
+
+        return hibernateDbType.toSql().equals(otherDbType.toSql());
     }
 
 }
